@@ -23,7 +23,15 @@ be changed again.
 Note, that `Value` uses `index` to access elements and typed parameters to
 fetch the right type. It will panic if the value is NOT of the right type.
 
-Let's see with nested Tuple.
+Also _note_ that `Value` ISN'T on the Tuple! It's a package level function.
+The reason for that is to keep the interface and the tuple creation type free.
+If the Tuple creation had generics definitions it would mess with the
+rest of the functions. Thus, it was decided to leave the Value as a package
+function to have the benefit of generics.
+
+If someone has a better ideas, PRs are welcome. ;)
+
+Let's see Values with a nested Tuple.
 
 ```go
     t1 := tuple.New(1, 2, 3, 4, tuple.New("1", "2"))
