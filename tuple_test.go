@@ -52,3 +52,26 @@ func TestSlice(t *testing.T) {
 	// make sure we didn't change the original
 	assert.Equal(t, []any{1, 2, 3, "string"}, tuple1.values)
 }
+
+func TestHash(t *testing.T) {
+	tuple1 := New(1, 2)
+	tuple2 := New(1, 2)
+
+	first := tuple1.Sum()
+	second := tuple1.Sum()
+	assert.Equal(t, first, second)
+
+	assert.Equal(t, tuple1.Sum(), tuple2.Sum())
+}
+
+func TestHashWithWeirdValues(t *testing.T) {
+	tuple1 := New(1, 2, "string", &Tuple{values: []any{3, 4}})
+	tuple2 := New(1, 2, "string", &Tuple{values: []any{3, 4}})
+	tuple3 := New(1, 2, "string", &Tuple{values: []any{5, 6}})
+
+	first := tuple1.Sum()
+	second := tuple1.Sum()
+	assert.Equal(t, first, second)
+	assert.Equal(t, tuple1.Sum(), tuple2.Sum())
+	assert.NotEqual(t, tuple1.Sum(), tuple3.Sum())
+}

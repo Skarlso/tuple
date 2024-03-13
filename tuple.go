@@ -1,7 +1,9 @@
 package tuple
 
 import (
-	"hash/maphash"
+	"fmt"
+	"hash/fnv"
+	"reflect"
 	"sync"
 )
 
@@ -9,8 +11,7 @@ import (
 type Tuple struct {
 	values []any
 
-	mu   sync.RWMutex
-	hash maphash.Hash
+	mu sync.RWMutex
 }
 
 // New will create a new Tuple. The Tuple can be access by its API.
@@ -20,7 +21,6 @@ type Tuple struct {
 func New(values ...any) *Tuple {
 	return &Tuple{
 		values: values,
-		hash:   maphash.Hash{},
 	}
 }
 
@@ -92,5 +92,17 @@ func (t *Tuple) Slice(from, to int) *Tuple {
 }
 
 func (t *Tuple) Sum() uint64 {
-	panic("not yet implemented")
+	h := fnv.New64a()
+	v := reflect.ValueOf(t.values)
+
+	// Iterate over the elements of the slice
+	for i := 0; i < v.Len(); i++ {
+		element := v.Index(i).Interface()
+		// Hash each element
+		if _, err := h.Write([]byte(fmt.Sprintf("%v", element))); err != nil {
+			panic(err)
+		}
+	}
+
+	return h.Sum64()
 }
