@@ -10,6 +10,7 @@ import (
 // Tuple contains the values within a tuple.
 type Tuple struct {
 	values []any
+	key    uint64
 
 	mu sync.RWMutex
 }
@@ -33,7 +34,8 @@ type Contract interface {
 	ToSlice() []any
 	Len() int
 	Slice(from, to int) *Tuple
-	Sum() uint64
+	Key() uint64
+	Range(done <-chan struct{}) chan any
 }
 
 var _ Contract = &Tuple{}
@@ -62,6 +64,7 @@ func Value[T any](t *Tuple, index int) (value T) {
 	return value
 }
 
+// ToSlice creates a slice out of the tuple values.
 func (t *Tuple) ToSlice() []any {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -71,6 +74,7 @@ func (t *Tuple) ToSlice() []any {
 	return result
 }
 
+// Len returns how many elements there are in the Tuple.
 func (t *Tuple) Len() int {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -78,7 +82,8 @@ func (t *Tuple) Len() int {
 	return len(t.values)
 }
 
-// Slice will panic on case of index out of bounds.
+// Slice returns a new tuple with the syntax [from: to].
+// It will panic in case of index out of bounds.
 func (t *Tuple) Slice(from, to int) *Tuple {
 	t.mu.RLock()
 	defer t.mu.RUnlock()
@@ -91,7 +96,14 @@ func (t *Tuple) Slice(from, to int) *Tuple {
 	return newTuple
 }
 
-func (t *Tuple) Sum() uint64 {
+// Key returns a unique value for a given Tuple that can be used as a Key.
+// The value is cached on the Tuple after the first call of this function
+// and cannot be changed again.
+func (t *Tuple) Key() uint64 {
+	if t.key != 0 {
+		return t.key
+	}
+
 	h := fnv.New64a()
 	v := reflect.ValueOf(t.values)
 
@@ -104,5 +116,30 @@ func (t *Tuple) Sum() uint64 {
 		}
 	}
 
-	return h.Sum64()
+	t.key = h.Sum64()
+
+	return t.key
+}
+
+// Range provides a channel from which to fetch values of a tuple.
+func (t *Tuple) Range(done <-chan struct{}) chan any {
+	result := make(chan any)
+
+	t.mu.Lock()
+	values := make([]any, len(t.values))
+	copy(values, t.values)
+	t.mu.Unlock()
+
+	go func() {
+		defer close(result)
+		for _, v := range values {
+			select {
+			case <-done:
+				return
+			case result <- v:
+			}
+		}
+	}()
+
+	return result
 }

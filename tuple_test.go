@@ -1,6 +1,7 @@
 package tuple
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -57,11 +58,18 @@ func TestHash(t *testing.T) {
 	tuple1 := New(1, 2)
 	tuple2 := New(1, 2)
 
-	first := tuple1.Sum()
-	second := tuple1.Sum()
+	first := tuple1.Key()
+	second := tuple1.Key()
 	assert.Equal(t, first, second)
+	assert.Equal(t, tuple1.Key(), tuple2.Key())
 
-	assert.Equal(t, tuple1.Sum(), tuple2.Sum())
+	m := make(map[uint64]struct{})
+	t1 := New(1, 2, 3, 4, New("5", "6", "7", "8"))
+	t2 := New(1, 2, 3, 4, New("10", "11", "12", "13"))
+	m[t1.Key()] = struct{}{}
+	m[t2.Key()] = struct{}{}
+
+	fmt.Println(m)
 }
 
 func TestHashWithWeirdValues(t *testing.T) {
@@ -69,9 +77,21 @@ func TestHashWithWeirdValues(t *testing.T) {
 	tuple2 := New(1, 2, "string", &Tuple{values: []any{3, 4}})
 	tuple3 := New(1, 2, "string", &Tuple{values: []any{5, 6}})
 
-	first := tuple1.Sum()
-	second := tuple1.Sum()
+	first := tuple1.Key()
+	second := tuple1.Key()
 	assert.Equal(t, first, second)
-	assert.Equal(t, tuple1.Sum(), tuple2.Sum())
-	assert.NotEqual(t, tuple1.Sum(), tuple3.Sum())
+	assert.Equal(t, tuple1.Key(), tuple2.Key())
+	assert.NotEqual(t, tuple1.Key(), tuple3.Key())
+}
+
+func TestRange(t *testing.T) {
+	tuple1 := New(1, 2, "string")
+	done := make(chan struct{})
+
+	var result []any
+	for v := range tuple1.Range(done) {
+		result = append(result, v)
+	}
+
+	assert.Equal(t, []any{1, 2, "string"}, result)
 }
