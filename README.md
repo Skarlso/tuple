@@ -1,5 +1,7 @@
 # tuple
 
+![logo](./logo.png)
+
 A tuple "data type" for Go mimicking the API of Python tuples.
 
 The aim was to keep the interface as simple as possible. On top of that
