@@ -1,7 +1,6 @@
 package tuple
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -62,14 +61,6 @@ func TestHash(t *testing.T) {
 	second := tuple1.Key()
 	assert.Equal(t, first, second)
 	assert.Equal(t, tuple1.Key(), tuple2.Key())
-
-	m := make(map[uint64]struct{})
-	t1 := New(1, 2, 3, 4, New("5", "6", "7", "8"))
-	t2 := New(1, 2, 3, 4, New("10", "11", "12", "13"))
-	m[t1.Key()] = struct{}{}
-	m[t2.Key()] = struct{}{}
-
-	fmt.Println(m)
 }
 
 func TestHashWithWeirdValues(t *testing.T) {
