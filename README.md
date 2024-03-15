@@ -118,7 +118,7 @@ Python tuple features that have been implemented:
 
 ## Hashing
 
-Once a tuple is created it can be used as a key in a hash map. To use it as such do the following:
+Once a tuple is created, it can be used as a key in a hash map. To use it as such do the following:
 
 ```go
     t1 := tuple.New(1, 2, 3 ,4, tuple.New("5", "6", "7", "8"))
@@ -127,7 +127,7 @@ Once a tuple is created it can be used as a key in a hash map. To use it as such
     m[t1.Key()] = struct{}{}
     m[t2.Key()] = struct{}{}
     // map[5075198087340781659:{}]
-    
+
     t1 = tuple.New(1, 2, 3 ,4, tuple.New("5", "6", "7", "8"))
     t2 = tuple.New(1, 2, 3 ,4, tuple.New("10", "11", "12", "13"))
     m = make(map[uint64]struct{})
@@ -135,6 +135,14 @@ Once a tuple is created it can be used as a key in a hash map. To use it as such
     m[t2.Key()] = struct{}{}
     // map[5075198087340781659:{} 15816401886143238155:{}]
 ```
+
+_Note_: The hashing "algorithm" for generating the keys is super trivial. It wouldn't stand against millions of
+values and could cause collisions quickly if values are only slightly different. The key generation depends on
+`%v` to use as a clutch.
+
+Further, because of the string representation, the output of `Key()` could change if the struct order
+is modified. Thus, it is advised to avoid serializing the output of `Key()`.
+
 
 ## Panics
 

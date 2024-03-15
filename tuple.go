@@ -99,6 +99,11 @@ func (t *Tuple) Slice(from, to int) *Tuple {
 // Key returns a unique value for a given Tuple that can be used as a Key.
 // The value is cached on the Tuple after the first call of this function
 // and cannot be changed again.
+// _Note_: This is a trivial approach to hashing and the usage of %v depends
+// on the output of %v. If that changes, the Key changes as well.
+// Further, there are cases where this might produce a similar key or a
+// different key even though values didn't change. It is good for trivial
+// types, but can cause some problems for more complex one.
 func (t *Tuple) Key() uint64 {
 	if t.key != 0 {
 		return t.key
